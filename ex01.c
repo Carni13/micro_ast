@@ -1,5 +1,6 @@
 #include "ft_btree.h"
 #include <stdlib.h>
+#include <string.h>
 
 t_btree	*btree_create_node(void *item)
 {
@@ -43,9 +44,9 @@ void	btree_apply_suffix(t_btree *root, void (*applyf)(void *))
 
 }
 
-void print_item(void *items)
-{
-	printf("[%d]", (int *)items);
+void print_item(void *items, int level, int first)
+{	
+	printf("[%s]", (char *)items);
 }
 
 int cmpf(void *c1, void *c2)
@@ -56,6 +57,7 @@ int cmpf(void *c1, void *c2)
 	cmp1 = (int *)c1;
 	cmp2 = (int *)c2;
 
+	printf ("cmp1 %d cmp2 %d\n",cmp1, cmp2);
 	if (cmp1 < cmp2)
 		return (-1);
 	if (cmp1 == cmp2)
@@ -71,7 +73,7 @@ void btree_insert_data(t_btree **root, void *item, int (*cmpf) (void *, void *))
 		*root = btree_create_node(item);
 		return ;
 	}
-	if( cmpf(item, (*root)->item) < 0)
+	if (cmpf(item, (*root)->item) < 0)
 		btree_insert_data(&(*root)->left,item, cmpf);
 	else
 		btree_insert_data(&(*root)->right,item, cmpf);
@@ -112,7 +114,7 @@ void print2DUtil(t_btree *root, int space)
     printf("\n");
     for (int i = COUNT; i < space; i++)
         printf(" ");
-    printf("%d\n", root->item);
+    printf("%s\n", root->item);
  
     // Process left child
     print2DUtil(root->left, space);
@@ -122,6 +124,21 @@ void print2D(t_btree *root)
 {
    // Pass initial space count as 0
    print2DUtil(root, 0);
+}
+
+int btree_level_count(t_btree *root)
+{
+	int size_left;
+	int size_right;
+
+	if (!root)
+		return (0);
+	size_left = btree_level_count(root->left);
+	size_right = btree_level_count(root->right);
+	if (size_left > size_right)
+		return (size_left + 1);
+	else
+		return(size_right + 1);
 }
 
 int main()
@@ -168,21 +185,30 @@ int main()
 	printf("\n");
 	printf("2 1 = %d\n", cmpf(2,1));
 	*/
-	btree_insert_data(&root, 1,	cmpf);
+	btree_insert_data(&root, "1",	strcmp);
 	print2D(root);
-	btree_insert_data(&root, 0,	cmpf);
+	btree_insert_data(&root, "0",	strcmp);
 	print2D(root);
-	btree_insert_data(&root, 2,	cmpf);
+	btree_insert_data(&root, "2", strcmp);
 	print2D(root);
-	btree_insert_data(&root, 4,	cmpf);
+	btree_insert_data(&root, "4",	strcmp);
 	print2D(root);
-	btree_insert_data(&root, 3,	cmpf);
+	btree_insert_data(&root, "3",	strcmp);
 	printf("===========================================================================\n");
 	print2D(root);
+	btree_insert_data(&root, "-3",	strcmp);
+	printf("===========================================================================\n");
+	print2D(root);
+	printf("===========================================================================\n");
+
+	/*
 	printf("valeur de retour %d\n",(int *)btree_search_item(&root, 1, cmpf));
-		printf("valeur de retour %d\n",(int *)btree_search_item(&root, 2, cmpf));
+	printf("valeur de retour %d\n",(int *)btree_search_item(&root, 2, cmpf));
 	printf("valeur de retour %d\n",(int *)btree_search_item(&root, 4, cmpf));
 	printf("valeur de retour %d\n",(int *)btree_search_item(&root, 10, cmpf));
+	*/
+	printf("valeur de retour %d\n", btree_level_count(root));
+	btree_apply_by_level(root, print_item);
 
 	return (0);
 }

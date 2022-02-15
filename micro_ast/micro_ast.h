@@ -1,20 +1,22 @@
-#ifndef FT_BTREE_H
-# define FT_BTREE_H
+#ifndef MICRO_AST_H
+# define MICRO_AST_H
 # include <unistd.h>
 # include <stdio.h>
 # include <stdio.h>
 # include <malloc.h>
 # include <string.h>
+# include "libft/includes/libft.h"
 # define COUNT 10
+
+typedef enum	e_type
+{PLUS, MULTI, NBR} t_type;
 
 typedef struct s_btree
 {
+    t_type type;
+    char    *item;
     struct s_btree  *left;
     struct s_btree  *right;
-    void    *item;
 } t_btree;
-
-void btree_apply_by_level(t_btree *root, void (*applyf)(void *item, int current_level, int is_first));
-void print_item(void *items, int level, int first);
 
 #endif
