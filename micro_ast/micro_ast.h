@@ -14,7 +14,7 @@ typedef enum	e_type
 typedef struct s_btree
 {
     t_type type;
-    char    *item;
+    char    *token;
     struct s_btree  *left;
     struct s_btree  *right;
 } t_btree;
