@@ -31,15 +31,11 @@ void print2D(t_btree *root)
 
 void    __btree_destroy(t_btree *root)
 {
-    static int i = 0;
     if (!root)
             return ;
-    printf("i = %d, item : %s\n", i, root->token);
-    i = i + 1;
     __btree_destroy(root->left);
     __btree_destroy(root->right);
-    //free(root->token);
-
+    free(root->token);
     free(root);
 }
 
@@ -47,9 +43,9 @@ t_type __find_type(char *item)
 {
     if(!item)
         return (-1); 
-    if(__strncmp(item, "+", 2) == 0)
+    if(__strncmp(item, "+", 2) == 0 || __strncmp(item, "-", 2) == 0)
         return (PLUS);
-    if(__strncmp(item, "*", 2) == 0)
+    if(__strncmp(item, "*", 2) == 0 || __strncmp(item, "/", 2) == 0)
         return (MULTI);
     else 
         return (NBR);
@@ -85,30 +81,47 @@ char *__find_next_operator(char **token)
     i = 0;
     while(token[i])
     {
+        printf("i = %d\n", i);
+        printf("token[%d] = %s et find = %s\n", i, token[i], find);
+        if (token[i][0] == '(')
+        {
+            printf("-%d-\n",i);
+            while(token[i][0] != ')')
+                i++;
+        }
         if (__find_type(token[i]) == PLUS || __find_type(token[i]) == MULTI)
             tmp = token[i];
         if (find == NULL)
             find = tmp;
         else if (__priority_cmp(find, tmp) > 0)
             find = tmp;
+        printf(" i = %d\n",i);
         i++;
     }
     return (find);
 }
-
+   
 char **__split_token_left(char **token, char *next_op)
 {
     char **left;
     int     size_left;
 
     size_left = 0;
-    while(token[size_left] != next_op)
-        size_left++;
+    if (token[0][0] == '(')
+    {
+        while(token[size_left][0] != ')')
+            size_left++;
+    }
+    else
+    {
+        while(token[size_left] != next_op)
+            size_left++;
+    }
     left = malloc(sizeof(char *) * (size_left + 1));
     if (!left)
         return(NULL);
     left[size_left] = NULL;
-    while(--size_left > -1)
+    while((--size_left )> -1 )
         left[size_left] = token[size_left];
     return (left);
 }
@@ -170,7 +183,7 @@ int __create_tree(char **token, t_btree **root)
         if (!new_node)
             return (0);
         *root = new_node;
-        //free(token);
+        free(token);
         return (1);
     }
     left_token = __split_token_left(token, next_op);
@@ -178,19 +191,21 @@ int __create_tree(char **token, t_btree **root)
     if (!left_token)
         return (0);
     if (!right_token)
-        return (/*free(left_token),*/ 0);
+        return (free(left_token), 0);
     new_node = btree_create_node(next_op); 
     if (!new_node)
         return (0);
     *root = new_node;
+    printf("-1-\n");
     res = __create_tree(left_token, &((*root)->left));
+        printf("-2-\n");
     res2 = __create_tree(right_token, &((*root)->right));
     if (!res || !res2)
     {
-        //__btree_destroy(*root);
+        __btree_destroy(*root);
         return (0);
     }
-    //free(token);
+    free(token);
     return(1);
 }
 
@@ -208,30 +223,12 @@ int main (int ac, char **av)
 
     root = NULL;
     token = __split(av[1],' ');
-    
-
-   int res = 0;
+    int res = 0;
     res = __create_tree(token, &root);
-
     test(root);
-    printf("res = %d \n", res);
-    printf("root %p\n", root);
-    printf("root->left %s\n", root->left->token);
-    printf("root->right %s\n", root->right->token);
-    test(root);
-    //print2D(root);
+    print2D(root);
    __btree_destroy(root);
-/*
-    int i;
-
-    i = 0;
-    while(token[i]):
-    {
-        //free(token[i]);
-        i++;
-    }
-    //free(token);
-    */
+   return (res);
 }  
 //je suis un nbr et que right et left sont null je cree le node
 // si je suis un nbr et que left 
