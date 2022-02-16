@@ -29,6 +29,19 @@ void print2D(t_btree *root)
    print2DUtil(root, 0);
 }
 
+void    __btree_destroy(t_btree *root)
+{
+    static int i = 0;
+    if (!root)
+            return ;
+    printf("i = %d, item : %s\n", i, root->token);
+    i = i + 1;
+    __btree_destroy(root->left);
+    __btree_destroy(root->right);
+    //free(root->token);
+
+    free(root);
+}
 
 t_type __find_type(char *item)
 {
@@ -50,7 +63,7 @@ t_btree	*btree_create_node(char *token)
 	if (!new)
 		return (NULL);
 	new->left = NULL;
-	new->left = NULL;
+	new->right = NULL;
 	new->token = token;
     new->type = __find_type(token);
 	return (new);
@@ -144,18 +157,20 @@ int __create_tree(char **token, t_btree **root)
     int res;
     int res2;
 
+    new_node = NULL;
     if (!token)
     {
         *root = NULL;
         return (1);
     }
     next_op = __find_next_operator(token);
-    if (! next_op)
+    if (!next_op)
     {
         new_node = btree_create_node(token[0]);
         if (!new_node)
             return (0);
         *root = new_node;
+        //free(token);
         return (1);
     }
     left_token = __split_token_left(token, next_op);
@@ -163,55 +178,60 @@ int __create_tree(char **token, t_btree **root)
     if (!left_token)
         return (0);
     if (!right_token)
-        return (free(left_token), 0);
-    new_node = btree_create_node(next_op);
+        return (/*free(left_token),*/ 0);
+    new_node = btree_create_node(next_op); 
     if (!new_node)
         return (0);
     *root = new_node;
-    res = __create_tree(left_token, &(new_node->left));
-    res2 = __create_tree(right_token, &(new_node->right));
+    res = __create_tree(left_token, &((*root)->left));
+    res2 = __create_tree(right_token, &((*root)->right));
     if (!res || !res2)
+    {
+        //__btree_destroy(*root);
         return (0);
-    //destroy_tree
+    }
+    //free(token);
     return(1);
-    /*
-    printf("token = %s\n", next_op);
-    printf("-left-\n");
-    print_token(left_token);
-    printf("-right-\n");
-    print_token(right_token);
-    printf("\n");
-        printf("\n");
-    printf("\n");
-*/
 }
 
 #include <string.h>
+void test(t_btree *root)
+{
+    printf("%p\n",root);
+}
 
 int main (int ac, char **av)
 {
     t_btree *root;
     char **token;
     (void)ac;
-    (void)root;
 
     root = NULL;
     token = __split(av[1],' ');
-    /*
-    int i;
-    i = 0;
-    while(token[i])
-    {
-        printf("%s\n", token[i]);
-        i++;
-    }
-    printf("%p\n", token[i]);
-    */
+    
+
    int res = 0;
     res = __create_tree(token, &root);
+
+    test(root);
     printf("res = %d \n", res);
     printf("root %p\n", root);
-    print2D(root);
+    printf("root->left %s\n", root->left->token);
+    printf("root->right %s\n", root->right->token);
+    test(root);
+    //print2D(root);
+   __btree_destroy(root);
+/*
+    int i;
+
+    i = 0;
+    while(token[i]):
+    {
+        //free(token[i]);
+        i++;
+    }
+    //free(token);
+    */
 }  
 //je suis un nbr et que right et left sont null je cree le node
 // si je suis un nbr et que left 
