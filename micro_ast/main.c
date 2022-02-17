@@ -81,21 +81,12 @@ char *__find_next_operator(char **token)
     i = 0;
     while(token[i])
     {
-        printf("i = %d\n", i);
-        printf("token[%d] = %s et find = %s\n", i, token[i], find);
-        if (token[i][0] == '(')
-        {
-            printf("-%d-\n",i);
-            while(token[i][0] != ')')
-                i++;
-        }
         if (__find_type(token[i]) == PLUS || __find_type(token[i]) == MULTI)
             tmp = token[i];
         if (find == NULL)
             find = tmp;
         else if (__priority_cmp(find, tmp) > 0)
             find = tmp;
-        printf(" i = %d\n",i);
         i++;
     }
     return (find);
@@ -107,16 +98,8 @@ char **__split_token_left(char **token, char *next_op)
     int     size_left;
 
     size_left = 0;
-    if (token[0][0] == '(')
-    {
-        while(token[size_left][0] != ')')
-            size_left++;
-    }
-    else
-    {
-        while(token[size_left] != next_op)
-            size_left++;
-    }
+	while(token[size_left] != next_op)
+		size_left++;
     left = malloc(sizeof(char *) * (size_left + 1));
     if (!left)
         return(NULL);
@@ -196,9 +179,7 @@ int __create_tree(char **token, t_btree **root)
     if (!new_node)
         return (0);
     *root = new_node;
-    printf("-1-\n");
     res = __create_tree(left_token, &((*root)->left));
-        printf("-2-\n");
     res2 = __create_tree(right_token, &((*root)->right));
     if (!res || !res2)
     {
@@ -210,10 +191,6 @@ int __create_tree(char **token, t_btree **root)
 }
 
 #include <string.h>
-void test(t_btree *root)
-{
-    printf("%p\n",root);
-}
 
 int main (int ac, char **av)
 {
@@ -225,7 +202,6 @@ int main (int ac, char **av)
     token = __split(av[1],' ');
     int res = 0;
     res = __create_tree(token, &root);
-    test(root);
     print2D(root);
    __btree_destroy(root);
    return (res);
