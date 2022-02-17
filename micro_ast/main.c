@@ -35,7 +35,7 @@ void    __btree_destroy(t_btree *root)
             return ;
     __btree_destroy(root->left);
     __btree_destroy(root->right);
-    free(root->token);
+    //free(root->token);
     free(root);
 }
 
@@ -88,7 +88,6 @@ int	 __skip_parenthesis(char **token, int i)
 			parenthesis--;
 		i++;
 	}
-	printf("i : >%d<\n", i);
 	return (i);
 }
 
@@ -108,7 +107,6 @@ char *__find_next_operator(char **token)
 			i = __skip_parenthesis(token, i);
 			continue ;
 		}
-		printf("advanced token[i] : %s\n", token[i]);
         if (__find_type(token[i]) != NBR)
             tmp = token[i];
         if (find == NULL)
@@ -117,7 +115,6 @@ char *__find_next_operator(char **token)
             find = tmp;
         i++;
     }
-	printf("next operator : %s\n", find);
     return (find);
 }
    
@@ -144,9 +141,10 @@ char **__split_token_right(char **token, char *next_op)
     int     size_right;
     int     i;
 
+    right = NULL;
     size_right = 0;
     i = 0;
-    while(token[i] != next_op)
+    while(token[i] && token[i] != next_op)
         i++;
     i++;
     while (token[i + size_right])
@@ -167,10 +165,28 @@ void print_token(char **token)
     i = 0;
     while(token[i])
     {
-        printf("%s\n", token[i]);
+        printf("%s", token[i]);
         i++;
     }
-    printf("%p\n", token[i]);
+    printf("\n");
+}
+
+int	 __error_parenthesis(char **token)
+{
+    int i;
+    int parenthesis;
+
+    i = 0;
+	parenthesis = 0;
+	while (token[i])
+	{
+		if (token[i][0] == '(')
+			parenthesis++;
+		if (token[i][0] == ')')
+			parenthesis++;
+		i++;
+	}
+    return ((parenthesis%2));
 }
 
 int	trim_token(char ***token)
@@ -178,22 +194,22 @@ int	trim_token(char ***token)
 	int	i;
 
 	i = 0;
-	printf("token [i] = %s\n", (*token)[i]);
 	if ((*token)[i] && (*token)[i][0] == '(')
 	{
-		free((*token)[i]);
+		//free((*token)[i]);
 		(*token)[i] = NULL;
 		(*token)++;
 	while ((*token)[i])
 		i++;
-	free((*token)[--i]);
+    i--;
+	//free((*token)[i]);
 	(*token)[i] = NULL;
 	return (1);
 	}
 	return (0);
 }
 
-int __create_tree(char **token, t_btree **root)
+int __create_tree(char **token, t_btree **root, int lvl)
 {
     char	*next_op;
     char	**left_token;
@@ -203,10 +219,15 @@ int __create_tree(char **token, t_btree **root)
     int		res2;
 	int		restrim;
 
+    restrim = 0;
     if (!token)
     {
         *root = NULL;
         return (1);
+    }
+    if (__error_parenthesis(token))
+    {
+        return (printf("syntax Error\n"), 0);
     }
 	restrim = trim_token(&token);
     next_op = __find_next_operator(token);
@@ -216,7 +237,7 @@ int __create_tree(char **token, t_btree **root)
         if (!new_node)
             return (0);
         *root = new_node;
-        free(token);
+        free(token - restrim);
         return (1);
     }
     left_token = __split_token_left(token, next_op);
@@ -229,35 +250,67 @@ int __create_tree(char **token, t_btree **root)
     if (!new_node)
         return (0);
     *root = new_node;
-    res = __create_tree(left_token, &((*root)->left));
-    res2 = __create_tree(right_token, &((*root)->right));
+    res2 = __create_tree(right_token, &((*root)->right), lvl + 1);
+    res = __create_tree(left_token, &((*root)->left), lvl + 1);
     if (!res || !res2)
     {
         __btree_destroy(*root);
         return (0);
     }
-	if (restrim)
-		free(--token);
-	else
-		free(token);
+    if (lvl)
+        free(token - restrim);
     return(1);
 }
 
 #include <string.h>
 
+int	first_trim_token(char ***token)
+{
+	int	i;
+
+	i = 0;
+	if ((*token)[i] && (*token)[i][0] == '(')
+	{
+		free((*token)[i]);
+		(*token)[i] = NULL;
+		(*token)++;
+	while ((*token)[i])
+		i++;
+    i--;
+	free((*token)[i]);
+	(*token)[i] = NULL;
+	return (1);
+	}
+	return (0);
+}
+
 int main (int ac, char **av)
 {
     t_btree *root;
     char **token;
+    int j;
     (void)ac;
+    int bracket;
 
     root = NULL;
     token = __split(av[1],' ');
+    j = 0;
+    bracket = first_trim_token(&token);
+    while (token[j])
+        j++;
     int res = 0;
-    res = __create_tree(token, &root);
+    res = __create_tree(token, &root, 0);
     print2D(root);
 	printf("resultat : %d\n", __execute_tree(root));
    __btree_destroy(root);
+   int i = 0;
+   while (i < j)
+   {
+       printf("i : %d\n", i);
+       free(token[i]);
+       i++;
+   }
+   free(token - bracket);
    return (res);
 }  
 //je suis un nbr et que right et left sont null je cree le node
