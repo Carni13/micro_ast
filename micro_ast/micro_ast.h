@@ -9,7 +9,7 @@
 # define COUNT 10
 
 typedef enum	e_type
-{PLUS, MULTI, NBR} t_type;
+{PLUS = 0, MULTI = 1, MINUS = 2, DIVIDE = 3, NBR = 4} t_type;
 
 typedef struct s_btree
 {

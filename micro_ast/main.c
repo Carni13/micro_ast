@@ -43,10 +43,14 @@ t_type __find_type(char *item)
 {
     if(!item)
         return (-1); 
-    if(__strncmp(item, "+", 2) == 0 || __strncmp(item, "-", 2) == 0)
+    if(__strncmp(item, "+", 2) == 0)
         return (PLUS);
-    if(__strncmp(item, "*", 2) == 0 || __strncmp(item, "/", 2) == 0)
+    if(__strncmp(item, "-", 2) == 0)
+        return (MINUS);
+    if(__strncmp(item, "*", 2) == 0)
         return (MULTI);
+    if(__strncmp(item, "/", 2) == 0)
+        return (DIVIDE);
     else 
         return (NBR);
 }
@@ -67,7 +71,25 @@ t_btree	*btree_create_node(char *token)
 
 int __priority_cmp(char *find, char *tmp)
 {
-    return (__find_type(find) - __find_type(tmp));
+	return ((__find_type(find) & 1) - (__find_type(tmp) & 1));
+}
+
+int	 __skip_parenthesis(char **token, int i)
+{
+	int parenthesis;
+
+	parenthesis = 1;
+	i++;
+	while (token[i] && parenthesis)
+	{
+		if (token[i][0] == '(')
+			parenthesis++;
+		if (token[i][0] == ')')
+			parenthesis--;
+		i++;
+	}
+	printf("i : >%d<\n", i);
+	return (i);
 }
 
 char *__find_next_operator(char **token)
@@ -79,9 +101,15 @@ char *__find_next_operator(char **token)
     find = NULL;
     tmp = NULL;
     i = 0;
-    while(token[i])
+    while (token[i])
     {
-        if (__find_type(token[i]) == PLUS || __find_type(token[i]) == MULTI)
+		if (token[i][0] == '(')
+		{
+			i = __skip_parenthesis(token, i);
+			continue ;
+		}
+		printf("advanced token[i] : %s\n", token[i]);
+        if (__find_type(token[i]) != NBR)
             tmp = token[i];
         if (find == NULL)
             find = tmp;
@@ -89,6 +117,7 @@ char *__find_next_operator(char **token)
             find = tmp;
         i++;
     }
+	printf("next operator : %s\n", find);
     return (find);
 }
    
@@ -144,21 +173,42 @@ void print_token(char **token)
     printf("%p\n", token[i]);
 }
 
+int	trim_token(char ***token)
+{
+	int	i;
+
+	i = 0;
+	printf("token [i] = %s\n", (*token)[i]);
+	if ((*token)[i] && (*token)[i][0] == '(')
+	{
+		free((*token)[i]);
+		(*token)[i] = NULL;
+		(*token)++;
+	while ((*token)[i])
+		i++;
+	free((*token)[--i]);
+	(*token)[i] = NULL;
+	return (1);
+	}
+	return (0);
+}
+
 int __create_tree(char **token, t_btree **root)
 {
-    char *next_op;
-    char **left_token;
-    char **right_token;
-    t_btree *new_node;
-    int res;
-    int res2;
+    char	*next_op;
+    char	**left_token;
+    char	**right_token;
+    t_btree	*new_node;
+    int		res;
+    int		res2;
+	int		restrim;
 
-    new_node = NULL;
     if (!token)
     {
         *root = NULL;
         return (1);
     }
+	restrim = trim_token(&token);
     next_op = __find_next_operator(token);
     if (!next_op)
     {
@@ -186,7 +236,10 @@ int __create_tree(char **token, t_btree **root)
         __btree_destroy(*root);
         return (0);
     }
-    free(token);
+	if (restrim)
+		free(--token);
+	else
+		free(token);
     return(1);
 }
 
