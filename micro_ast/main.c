@@ -256,6 +256,7 @@ int main (int ac, char **av)
     int res = 0;
     res = __create_tree(token, &root);
     print2D(root);
+	printf("resultat : %d\n", __execute_tree(root));
    __btree_destroy(root);
    return (res);
 }  

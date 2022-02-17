@@ -19,4 +19,6 @@ typedef struct s_btree
     struct s_btree  *right;
 } t_btree;
 
+int	__execute_tree(t_btree	*root);
+
 #endif
