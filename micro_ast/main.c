@@ -111,7 +111,7 @@ char *__find_next_operator(char **token)
             tmp = token[i];
         if (find == NULL)
             find = tmp;
-        else if (__priority_cmp(find, tmp) > 0)
+        else if (__priority_cmp(find, tmp) >= 0)
             find = tmp;
         i++;
     }

@@ -2,8 +2,7 @@
 # define MICRO_AST_H
 # include <unistd.h>
 # include <stdio.h>
-# include <stdio.h>
-# include <malloc.h>
+# include <stdlib.h>
 # include <string.h>
 # include "libft/includes/libft.h"
 # define COUNT 10
