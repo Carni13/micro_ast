@@ -4,7 +4,6 @@
 # include <stdio.h>
 # include <stdlib.h>
 # include <string.h>
-# include "libft/includes/libft.h"
 # define COUNT 10
 
 typedef enum	e_type
